@@ -3,30 +3,34 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import axios, { AxiosError } from 'axios';
 import { aiPrompt } from '../ai/aiPrompt';
 
-// Ensure these are properly typed in your environment variables
 const API_KEY = import.meta.env.GEMINI_API_KEY as string;
 const API_URL = import.meta.env.GEMINI_API_URL as string;
 
-// Improved type definitions
 type ButtonVariant = 'default' | 'ghost';
 type ButtonSize = 'default' | 'sm' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  darkMode: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
   className = '',
   variant = 'default',
   size = 'default',
+  darkMode,
   children,
   ...props
 }) => {
   const baseStyle = "inline-flex items-center justify-center text-sm font-medium transition-all focus:outline-none disabled:opacity-50 disabled:pointer-events-none rounded-full";
   const variants: Record<ButtonVariant, string> = {
-    default: "bg-primary text-white hover:bg-primary-dark",
-    ghost: "text-primary hover:bg-secondary",
+    default: darkMode
+      ? "bg-dark-primary text-white hover:bg-dark-secondary"
+      : "bg-light-primary text-white hover:bg-light-secondary",
+    ghost: darkMode
+      ? "text-dark-primary hover:bg-dark-background"
+      : "text-light-primary hover:bg-light-background",
   };
   const sizes: Record<ButtonSize, string> = {
     default: "h-10 px-4 py-2",
@@ -44,16 +48,20 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ className = '', ...props }) => {
+const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { darkMode: boolean }> = ({ className = '', darkMode, ...props }) => {
   return (
     <input
-      className={`flex px-3 py-2 w-full h-10 text-sm bg-white rounded-full border sm:h-12 border-primary sm:px-4 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${className}`}
+      className={`flex px-3 py-2 w-full h-10 text-sm rounded-full border sm:h-12 sm:px-4 placeholder:text-light-tertiary focus:outline-none focus:ring-2 focus:border-transparent ${
+        darkMode
+          ? 'bg-dark-background border-dark-primary focus:ring-dark-primary text-dark-primary'
+          : 'bg-white border-light-primary focus:ring-light-primary text-light-tertiary'
+      } ${className}`}
       {...props}
     />
   );
 };
 
-const ThinkingIndicator: React.FC = () => (
+const ThinkingIndicator: React.FC<{ darkMode: boolean }> = ({ darkMode }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -61,7 +69,7 @@ const ThinkingIndicator: React.FC = () => (
     transition={{ duration: 0.5 }}
     className="flex justify-start"
   >
-    <div className="bg-secondary p-2 sm:p-3 rounded-2xl max-w-[70%]">
+    <div className={`${darkMode ? 'bg-dark-tertiary' : 'bg-light-tertiary'} p-2 sm:p-3 rounded-2xl max-w-[70%]`}>
       <motion.div
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
@@ -77,13 +85,16 @@ const ThinkingIndicator: React.FC = () => (
   </motion.div>
 );
 
-// Define types for messages
 interface Message {
   text: string;
   sender: 'user' | 'ai';
 }
 
-const LegalAIChatbot: React.FC = () => {
+interface TwitterAnalyticsChatbotProps {
+  darkMode: boolean;
+}
+
+const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkMode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -92,12 +103,12 @@ const LegalAIChatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const predefinedQuestions: string[] = [
-    "Legal rights",
-    "Court procedures",
-    "Legal documents",
-    "Criminal law",
-    "Civil law",
-    "Constitutional law",
+    "Best posting time",
+    "Engagement metrics",
+    "Content strategy",
+    "Audience insights",
+    "Trend analysis",
+    "Performance stats",
   ];
 
   const scrollToBottom = useCallback(() => {
@@ -139,7 +150,7 @@ const LegalAIChatbot: React.FC = () => {
       const errorMessage = error instanceof AxiosError
         ? error.response?.data?.error || error.message
         : 'An unexpected error occurred';
-      setMessages(prev => [...prev, { text: `I apologize, there was an error processing your request: ${errorMessage}. Please try again later.`, sender: 'ai' }]);
+      setMessages(prev => [...prev, { text: `I apologize, there was an error analyzing your request: ${errorMessage}. Please try again later.`, sender: 'ai' }]);
     }
 
     setIsLoading(false);
@@ -174,6 +185,8 @@ const LegalAIChatbot: React.FC = () => {
     }
   };
 
+  console.log('Chatbot component rendered. Is open:', isOpen, 'Dark mode:', darkMode);
+
   return (
     <div className="fixed right-4 bottom-4 z-50 sm:bottom-8 sm:right-8">
       <AnimatePresence>
@@ -184,32 +197,40 @@ const LegalAIChatbot: React.FC = () => {
             exit="closed"
             variants={containerVariants}
             custom={isExpanded}
-            className="flex flex-col overflow-hidden bg-white shadow-2xl rounded-3xl max-w-[550px] w-full mx-auto"
+            className={`flex flex-col overflow-hidden shadow-2xl rounded-3xl max-w-[550px] w-full mx-auto ${
+              darkMode ? 'bg-dark-background' : 'bg-white'
+            }`}
             style={{
-              boxShadow: '0 10px 25px -5px rgba(200, 155, 0, 0.5), 0 8px 10px -6px rgba(200, 155, 0, 0.3)',
+              boxShadow: darkMode
+                ? '0 10px 25px -5px rgba(12, 65, 96, 0.5), 0 8px 10px -6px rgba(12, 65, 96, 0.3)'
+                : '0 10px 25px -5px rgba(115, 143, 167, 0.5), 0 8px 10px -6px rgba(115, 143, 167, 0.3)',
             }}
           >
             <motion.div
-              className="flex justify-between items-center p-4 text-white bg-gradient-to-r rounded-t-3xl cursor-move sm:p-6 from-primary to-primary-dark"
-              whileHover={{ backgroundImage: 'linear-gradient(to right, #C89B00, #9C7F00)' }}
-              transition={{ duration: 0.3 }}
+              className={`flex justify-between items-center p-4 text-white rounded-t-3xl cursor-move sm:p-6 ${
+                darkMode
+                  ? 'bg-gradient-to-r from-dark-primary to-dark-secondary'
+                  : 'bg-gradient-to-r from-light-primary to-light-secondary'
+              }`}
             >
               <div className="flex items-center space-x-3">
-                <div className="flex justify-center items-center w-10 h-10 text-base font-bold bg-white rounded-full shadow-inner sm:w-12 sm:h-12 sm:text-lg text-primary">
+                <div className={`flex justify-center items-center w-10 h-10 text-base font-bold rounded-full shadow-inner sm:w-12 sm:h-12 sm:text-lg ${
+                  darkMode ? 'bg-dark-background text-dark-primary' : 'bg-white text-light-primary'
+                }`}>
                   AI
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold sm:text-md">Legal AI Assistant</h3>
-                  <p className="text-xs sm:text-sm text-secondary">Your legal guide</p>
+                  <h3 className="text-sm font-semibold sm:text-md">Twitter Analytics AI</h3>
+                  <p className="text-xs sm:text-sm text-light-background">Your social media optimizer</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" onClick={handleClearChat} className="text-white hover:text-black">
+                <Button darkMode={darkMode} variant="ghost" size="sm" onClick={handleClearChat} className="text-white hover:text-dark-primary">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="text-white hover:text-black">
+                <Button darkMode={darkMode} variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)} className="text-white hover:text-dark-primary">
                   {isExpanded ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clipRule="evenodd" />
@@ -220,14 +241,18 @@ const LegalAIChatbot: React.FC = () => {
                     </svg>
                   )}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-white hover:text-black">
+                <Button darkMode={darkMode} variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="text-white hover:text-dark-primary">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </Button>
               </div>
             </motion.div>
-            <div className="overflow-y-auto flex-1 p-4 space-y-4 bg-gradient-to-b to-white sm:p-6 from-background">
+            <div className={`overflow-y-auto flex-1 p-4 space-y-4 sm:p-6 ${
+              darkMode
+                ? 'bg-gradient-to-b from-dark-background to-dark-secondary/20'
+                : 'bg-gradient-to-b from-white to-light-background'
+            }`}>
               <AnimatePresence>
                 {messages.map((message, index) => (
                   <motion.div
@@ -239,33 +264,48 @@ const LegalAIChatbot: React.FC = () => {
                     className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] p-3 sm:p-4 rounded-2xl shadow-md text-sm sm:text-base ${message.sender === 'user'
-                          ? 'bg-gradient-to-br from-primary to-primary-dark text-white'
-                          : 'bg-white text-gray-800 border border-secondary'
-                        }`}
+                      className={`max-w-[80%] p-3 sm:p-4 rounded-2xl shadow-md text-sm sm:text-base ${
+                        message.sender === 'user'
+                          ? darkMode
+                            ? 'bg-gradient-to-br from-dark-primary to-dark-secondary text-white'
+                            : 'bg-gradient-to-br from-light-primary to-light-secondary text-white'
+                          : darkMode
+                            ? 'bg-dark-background text-dark-primary border border-dark-secondary'
+                            : 'bg-white text-light-tertiary border border-light-secondary'
+                      }`}
                     >
                       {message.text}
                     </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
-              {isLoading && <ThinkingIndicator />}
+              {isLoading && <ThinkingIndicator darkMode={darkMode} />}
               <div ref={messagesEndRef} />
             </div>
-            <div className="p-4 bg-gradient-to-b from-white rounded-b-3xl sm:p-6 to-background">
+            <div className={`p-4 rounded-b-3xl sm:p-6 ${
+              darkMode
+                ? 'bg-gradient-to-b from-dark-background to-dark-secondary/20'
+                : 'bg-gradient-to-b from-white to-light-background'
+            }`}>
               <div className="flex mb-4 space-x-2">
                 <Input
                   type="text"
                   value={input}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Ask about legal matters..."
-                  className="flex-grow shadow-inner bg-background"
+                  placeholder="Ask about your Twitter analytics..."
+                  className="flex-grow shadow-inner"
+                  darkMode={darkMode}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={isLoading}
-                  className="bg-gradient-to-r rounded-full shadow-lg transition-shadow hover:shadow-xl from-primary to-primary-dark hover:from-primary-dark hover:to-primary"
+                  className={`rounded-full shadow-lg transition-shadow hover:shadow-xl ${
+                    darkMode
+                      ? 'bg-gradient-to-r from-dark-primary to-dark-secondary hover:from-dark-secondary hover:to-dark-primary'
+                      : 'bg-gradient-to-r from-light-primary to-light-secondary hover:from-light-secondary hover:to-light-primary'
+                  }`}
+                  darkMode={darkMode}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
@@ -279,7 +319,12 @@ const LegalAIChatbot: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setInput(question)}
-                    className="text-xs rounded-full border transition-colors sm:text-sm border-primary hover:bg-secondary"
+                    className={`text-xs rounded-full border transition-colors sm:text-sm ${
+                      darkMode
+                        ? 'border-dark-primary hover:bg-dark-background'
+                        : 'border-light-primary hover:bg-light-background'
+                    }`}
+                    darkMode={darkMode}
                   >
                     {question}
                   </Button>
@@ -294,7 +339,11 @@ const LegalAIChatbot: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(true)}
-          className="p-3 text-white bg-gradient-to-r rounded-full shadow-lg transition-all sm:p-4 from-primary to-primary-dark hover:shadow-xl"
+          className={`p-3 text-white rounded-full shadow-lg transition-all sm:p-4 ${
+            darkMode
+              ? 'bg-gradient-to-r from-dark-primary to-dark-secondary hover:from-dark-secondary hover:to-dark-primary'
+              : 'bg-gradient-to-r from-light-primary to-light-secondary hover:from-light-secondary hover:to-light-primary'
+          } hover:shadow-xl`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -305,4 +354,4 @@ const LegalAIChatbot: React.FC = () => {
   );
 };
 
-export default LegalAIChatbot;
+export default TwitterAnalyticsChatbot;

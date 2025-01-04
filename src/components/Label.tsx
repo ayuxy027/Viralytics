@@ -1,22 +1,37 @@
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-const ViralyticsLabel = ({ darkMode = false }) => {
+interface LabelProps {
+  darkMode: boolean;
+}
+
+const Label: React.FC<LabelProps> = ({ darkMode }) => {
+  // Log component mount and theme changes
+  useEffect(() => {
+    console.log('[Label] Component mounted with dark mode:', darkMode);
+    return () => console.log('[Label] Component unmounting');
+  }, []);
+
+  useEffect(() => {
+    console.log('[Label] Theme changed to:', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   const theme = {
     background: darkMode 
-      ? 'bg-gradient-to-r from-secondary-800/30 to-secondary-700/30'
-      : 'bg-gradient-to-r from-primary-100/60 to-primary-200/50',
+      ? 'bg-dark-background/80'
+      : 'bg-light-background/80',
     text: darkMode
-      ? 'text-text-dark-primary'
-      : 'text-text-light-primary',
+      ? 'text-dark-primary'
+      : 'text-light-tertiary',
     border: darkMode
-      ? 'border-secondary-700/30'
-      : 'border-primary-300/50',
-    highlight: darkMode
-      ? 'bg-gradient-to-r from-secondary-700/20 to-secondary-600/20'
-      : 'bg-gradient-to-r from-primary-200/40 to-primary-300/30',
-    shadow: darkMode
-      ? 'shadow-ambient-dark'
-      : 'shadow-ambient'
+      ? 'border-dark-primary/20'
+      : 'border-light-primary/20',
+    glow: darkMode
+      ? 'from-dark-primary/20 via-dark-secondary/20 to-dark-tertiary/20'
+      : 'from-light-primary/20 via-light-secondary/20 to-light-tertiary/20',
+    hover: darkMode
+      ? 'hover:bg-dark-primary/10'
+      : 'hover:bg-light-primary/10'
   };
 
   const labelVariants = {
@@ -37,7 +52,7 @@ const ViralyticsLabel = ({ darkMode = false }) => {
       }
     },
     hover: {
-      scale: 1.02,
+      scale: 1.05,
       transition: {
         type: "spring",
         stiffness: 400,
@@ -49,13 +64,30 @@ const ViralyticsLabel = ({ darkMode = false }) => {
   const pulseVariants = {
     animate: {
       scale: [1, 1.05, 1],
-      opacity: [0.5, 0.8, 0.5],
+      opacity: [0.3, 0.5, 0.3],
       transition: {
         duration: 2,
         repeat: Infinity,
         ease: "easeInOut"
       }
     }
+  };
+
+  // Log animation states
+  const handleAnimationStart = () => {
+    console.log('[Label] Animation started');
+  };
+
+  const handleAnimationComplete = () => {
+    console.log('[Label] Animation completed');
+  };
+
+  const handleHoverStart = () => {
+    console.log('[Label] Hover started');
+  };
+
+  const handleHoverEnd = () => {
+    console.log('[Label] Hover ended');
   };
   
   return (
@@ -65,37 +97,67 @@ const ViralyticsLabel = ({ darkMode = false }) => {
       animate="animate"
       whileHover="hover"
       variants={labelVariants}
+      onAnimationStart={handleAnimationStart}
+      onAnimationComplete={handleAnimationComplete}
+      onHoverStart={handleHoverStart}
+      onHoverEnd={handleHoverEnd}
     >
       <div className="inline-flex relative justify-center items-center">
+        {/* Glowing background effect */}
         <motion.div 
-          className={`absolute -inset-2 bg-gradient-to-r opacity-50 blur-xl from-primary-300/20 via-primary-400/20 to-skyblue-300/20`}
+          className={`
+            absolute -inset-3 
+            bg-gradient-to-r ${theme.glow}
+            opacity-50 blur-xl
+            transition-opacity duration-300
+          `}
         />
         
+        {/* Pulse effect */}
         <motion.div
-          className={`absolute inset-0 rounded-full ${theme.highlight}`}
+          className={`
+            absolute inset-0 
+            rounded-xl
+            bg-gradient-to-r ${theme.glow}
+            transition-opacity duration-300
+          `}
           variants={pulseVariants}
           animate="animate"
         />
         
+        {/* Main label */}
         <motion.div
           className={`
-            relative px-6 py-2 rounded-full
+            relative 
+            px-6 py-2 
+            rounded-xl
             border ${theme.border}
             ${theme.background}
             backdrop-blur-sm
             flex items-center gap-2
             font-medium
             ${theme.text}
-            shadow-lg ${theme.shadow}
-            hover:bg-gradient-to-r hover:from-primary-400/15 hover:to-skyblue-400/15
+            ${theme.hover}
             transition-all duration-300
+            shadow-lg shadow-black/5
           `}
         >
-          <span>🐦 | Twitter Analytics Tool</span>
+          <motion.span 
+            role="img" 
+            aria-label="Twitter bird"
+            whileHover={{ 
+              rotate: [0, -10, 10, -10, 0],
+              transition: { duration: 0.5 }
+            }}
+            onHoverStart={() => console.log('[Label] Emoji hover started')}
+          >
+            🐦
+          </motion.span>
+          <span className="font-semibold">Twitter Analytics Tool</span>
         </motion.div>
       </div>
     </motion.div>
   );
 };
 
-export default ViralyticsLabel;
+export default Label;
