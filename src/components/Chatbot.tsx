@@ -26,8 +26,8 @@ const Button: React.FC<ButtonProps> = ({
   const baseStyle = "inline-flex items-center justify-center text-sm font-medium transition-all focus:outline-none disabled:opacity-50 disabled:pointer-events-none rounded-full";
   const variants: Record<ButtonVariant, string> = {
     default: darkMode
-      ? "bg-dark-primary text-white hover:bg-dark-secondary"
-      : "bg-light-primary text-white hover:bg-light-secondary",
+      ? "bg-dark-primary text-dark-background hover:bg-dark-secondary"
+      : "bg-light-primary text-light-background hover:bg-light-secondary",
     ghost: darkMode
       ? "text-dark-primary hover:bg-dark-background"
       : "text-light-primary hover:bg-light-background",
@@ -185,8 +185,6 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
     }
   };
 
-  console.log('Chatbot component rendered. Is open:', isOpen, 'Dark mode:', darkMode);
-
   return (
     <div className="fixed right-4 bottom-4 z-50 sm:bottom-8 sm:right-8">
       <AnimatePresence>
@@ -198,7 +196,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
             variants={containerVariants}
             custom={isExpanded}
             className={`flex flex-col overflow-hidden shadow-2xl rounded-3xl max-w-[550px] w-full mx-auto ${
-              darkMode ? 'bg-dark-background' : 'bg-white'
+              darkMode ? 'bg-dark-background' : 'bg-light-background'
             }`}
             style={{
               boxShadow: darkMode

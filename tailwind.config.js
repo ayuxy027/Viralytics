@@ -8,16 +8,16 @@ export default {
     extend: {
       colors: {
         light: {
-          primary: '#738fa7',    // Blue Gray
-          secondary: '#c3ceda',  // Misty Blue
-          tertiary: '#0c4160',   // Midnight Blue
-          background: '#f8fafc', // Light Background
+          primary: '#7895b0',
+          secondary: '#d0dae6',
+          tertiary: '#0d497a',
+          background: '#f9fbfd',
         },
         dark: {
-          primary: '#c3ceda',    // Misty Blue
-          secondary: '#738fa7',  // Blue Gray
-          tertiary: '#0c4160',   // Midnight Blue
-          background: '#071330', // Dark Blue
+          primary: '#cfd8e3',
+          secondary: '#6b85a0',
+          tertiary: '#0a3d68',
+          background: '#061228',
         }
       },
       backgroundImage: {

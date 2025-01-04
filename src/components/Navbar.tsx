@@ -14,7 +14,6 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
     user,
     loginWithRedirect,
     logout,
-    error
   } = useAuth0();
 
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -29,69 +28,33 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
     { id: 3, text: "Check out new AI features!", time: "1d ago" },
   ];
 
-  // Activity Logging
-  useEffect(() => {
-    console.log(`[Navbar] Initial render - Dark mode: ${darkMode}`);
-    console.log('[Navbar] Auth status:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
-    if (user) {
-      console.log('[Navbar] User info loaded:', { 
-        email: user.email,
-        name: user.name,
-        lastLogin: new Date().toISOString()
-      });
-    }
-  }, [darkMode, isAuthenticated, user]);
-
-  useEffect(() => {
-    console.log('[Navbar] User menu visibility changed:', showUserMenu);
-  }, [showUserMenu]);
-
-  useEffect(() => {
-    console.log('[Navbar] Notifications visibility changed:', showNotifications);
-  }, [showNotifications]);
-
   useEffect(() => {
     function handleClickOutside(event: MouseEvent): void {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        console.log('[Navbar] Clicking outside user menu - closing menu');
         setShowUserMenu(false);
       }
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        console.log('[Navbar] Clicking outside notifications - closing notifications');
         setShowNotifications(false);
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      console.log('[Navbar] Cleaning up click outside listener');
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   useEffect(() => {
     if (showUserMenu) {
-      console.log('[Navbar] User menu opened - closing notifications');
       setShowNotifications(false);
     }
   }, [showUserMenu]);
 
   useEffect(() => {
     if (showNotifications) {
-      console.log('[Navbar] Notifications opened - closing user menu');
       setShowUserMenu(false);
     }
   }, [showNotifications]);
-
-  useEffect(() => {
-    if (error) {
-      console.error('[Navbar] Auth0 Error:', {
-        message: error.message,
-        timestamp: new Date().toISOString(),
-        stack: error.stack
-      });
-    }
-  }, [error]);
 
   const menuVariants = {
     hidden: {
@@ -121,11 +84,9 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
 
   const UserProfile = () => {
     if (!user) {
-      console.log('[Navbar] No user profile available');
       return null;
     }
 
-    console.log('[Navbar] Rendering user profile:', { name: user.name });
     const userImage = user.picture || 'https://via.placeholder.com/150';
 
     return (
@@ -134,21 +95,6 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
         <span className={darkMode ? "text-dark-primary" : "text-light-tertiary"}>{user.name}</span>
       </div>
     );
-  };
-
-  const handleLogin = () => {
-    console.log('[Navbar] Initiating login redirect');
-    loginWithRedirect();
-  };
-
-  const handleLogout = () => {
-    console.log('[Navbar] User logging out');
-    logout();
-  };
-
-  const handleThemeToggle = () => {
-    console.log('[Navbar] Theme toggled:', darkMode ? 'light' : 'dark');
-    toggleDarkMode();
   };
 
   return (
@@ -186,7 +132,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleThemeToggle}
+                onClick={toggleDarkMode}
                 className={`p-2 rounded-md transition-colors duration-300 ${
                   darkMode 
                     ? 'hover:bg-dark-primary/20' 
@@ -285,7 +231,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
                           <div className="p-2">
                             <motion.button
                               whileHover={{ scale: 1.02 }}
-                              onClick={handleLogout}
+                              onClick={() => logout()}
                               className={`p-3 w-full text-left rounded-lg transition-colors duration-300 ${
                                 darkMode 
                                   ? "hover:bg-dark-primary/10 text-dark-primary" 
@@ -305,7 +251,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleLogin}
+                  onClick={() => loginWithRedirect()}
                   className={`px-4 py-2 font-medium rounded-xl transition-colors duration-300 ${
                     darkMode
                       ? "bg-dark-primary text-dark-background hover:bg-dark-secondary"
