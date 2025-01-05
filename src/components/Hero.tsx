@@ -149,7 +149,7 @@ const Hero: React.FC<HeroProps> = ({ darkMode }) => {
           <span className="inline-block relative">
             <span className="relative z-10">Viralytics</span>
             <span className={`absolute -inset-1 block -skew-y-3 ${
-              darkMode ? 'bg-dark-secondary' : 'bg-light-secondary'
+              darkMode ? 'bg-light-secondary' : 'bg-light-tertiary'
             } opacity-30`}></span>
           </span>
         </motion.h1>
@@ -173,19 +173,6 @@ const Hero: React.FC<HeroProps> = ({ darkMode }) => {
             <QuantumButton darkMode={darkMode} onClick={() => loginWithRedirect()}>
               Get Started
             </QuantumButton>
-            // <motion.button
-            //   whileHover={{ scale: 1.05 }}
-            //   whileTap={{ scale: 0.95 }}
-            //   onClick={() => loginWithRedirect()}
-            //   className={`flex items-center px-6 py-3 md:px-8 md:py-4 font-semibold rounded-xl shadow-lg 
-            //     transition-all duration-300 ${
-            //     darkMode
-            //       ? 'bg-dark-primary text-dark-background hover:bg-dark-secondary hover:shadow-dark-primary/25'
-            //       : 'bg-light-tertiary text-light-background hover:bg-light-primary hover:shadow-light-primary/25'
-            //   }`}
-            // >
-            //   Get Started <ArrowRight className="ml-2 w-5 h-5" />
-            // </motion.button>
           ) : (
             <>
               <motion.button
