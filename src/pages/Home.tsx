@@ -4,8 +4,7 @@ import Hero from '../components/Hero';
 import Navbar from '../components/Navbar';
 import Chat from '../components/Chatbot';
 import Analytics from '../pages/Analytics';
-import Leaderboard from '../pages/Leaderboard';
-import Settings from '../pages/Settings';
+import Leaderboard from './Leaderboard';
 import Health from '../pages/Health';
 
 const Home: React.FC = () => {
@@ -36,10 +35,6 @@ const Home: React.FC = () => {
                     <Route
                         path="/leaderboard"
                         element={<Leaderboard darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}
-                    />
-                    <Route
-                        path="/settings"
-                        element={<Settings darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}
                     />
                     <Route
                         path="/health"

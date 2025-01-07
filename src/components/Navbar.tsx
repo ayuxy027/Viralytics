@@ -160,11 +160,6 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
               }`}>
                 Health
               </Link>
-              <Link to="/settings" className={`font-medium transition-colors duration-300 ${
-                darkMode ? "text-dark-primary hover:text-dark-secondary" : "text-light-tertiary hover:text-light-primary"
-              }`}>
-                Settings
-              </Link>
             </div>
             <div className="flex items-center space-x-6">
               <motion.button
