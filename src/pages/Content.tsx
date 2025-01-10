@@ -130,7 +130,7 @@ const PostGenerator: React.FC<{
           <div className="w-full min-h-[100px] p-4 rounded-xl border
             bg-light-secondary/5 text-light-tertiary border-light-primary/10
             dark:bg-dark-secondary/5 dark:text-dark-primary dark:border-dark-primary/10">
-            {generatedPost.response}
+            {JSON.parse(generatedPost.response).explanation}
           </div>
           <button
             onClick={handleCopy}
