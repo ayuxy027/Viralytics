@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
-import { BarChart, Clock, Lightbulb, TrendingUp, Heart, Share2, MessageCircle, ChartBarIncreasingIcon, Target } from 'lucide-react';
+import { BarChart, Clock, Lightbulb, TrendingUp,ChartBarIncreasingIcon, Target } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
 
@@ -20,6 +20,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ darkMode }) => {
   const borderColor = darkMode ? 'border-dark-primary/20' : 'border-light-primary/20';
   const cardBgColor = darkMode ? 'bg-dark-primary/10' : 'bg-light-primary/10';
 
+  // @ts-ignore 
+  
   const [insights, setInsights] = useState<Insight[]>([]);
 
   useEffect(() => {
@@ -39,6 +41,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ darkMode }) => {
         const insightsArray = data.response.split("\n");
 
         // Store insights in an array
+        // @ts-ignore 
         setInsights(insightsArray.map((line) => ({ data: [line] })));
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -188,8 +191,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ darkMode }) => {
                 </div>
                 <ul className="mt-4 space-y-4 text-gray-600">
                   {insights.map((insight, index) => (
-                    <li key={index} className="flex items-center p-3 bg-gray-100 rounded-lg mb-2">
-                      <TrendingUp className="w-5 h-5 mr-3 text-gray-500" />
+                    <li key={index} className="flex items-center p-3 mb-2 bg-gray-100 rounded-lg">
+                      <TrendingUp className="mr-3 w-5 h-5 text-gray-500" />
                       <span>{insight.data[0]}</span>
                     </li>
                   ))}

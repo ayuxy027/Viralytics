@@ -49,6 +49,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ darkMode }) => {
   const hoverBgColor = darkMode ? 'hover:bg-dark-primary/20' : 'hover:bg-light-primary/20';
   const [posts, setPosts] = useState<Post[]>([]);
 
+  // @ts-ignore 
   const fetchLeaderboardData = async (): Promise<readonly Post[]> => {
     try {
       const response = await fetch('https://pythonbackend-n73y.onrender.com/api/leaderboard');
