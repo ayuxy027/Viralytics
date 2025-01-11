@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.2.4",
+    "@vercel/analytics": "^1.4.1",
     "axios": "^1.7.9",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.7",
