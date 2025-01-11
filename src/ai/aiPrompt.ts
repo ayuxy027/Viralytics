@@ -38,8 +38,8 @@ const generateChatbotPrompt = ({ userInput }: TwitterAnalyticsChatbot): string =
   7. Avoid entertaining irrelevant or wasteful queries. Respond appropriately as defined below.
 
   **Handling Wasteful or Irrelevant Queries:**
-  - If the query is deemed wasteful, irrelevant, or abusive, respond with:  
-    \`"Your IP address has been fetched. In case of heavy or malicious requests, we reserve the right to take action by invoicing credit bills to you for deterrence. Proceed responsibly."\`
+  - If the query is deemed wasteful, irrelevant, or abusive, respond with same/similar template :  
+    \`"Your IP address is been fetched. In case of heavy or malicious requests, we reserve the right to take action by invoicing AI Credit bills to you for deterrence. Proceed responsibly."\`
 
   **Handling Queries:**
   - For **Leaderboard**: Guide users to https://viralytics.vercel.app/leaderboard for top-performing posts.
