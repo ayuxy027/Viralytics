@@ -10,6 +10,11 @@ interface Message {
 
 interface TwitterAnalyticsChatbotProps {
   darkMode: boolean;
+  characterLimit?: number;
+  cooldownDuration?: number;
+  language?: 'en' | 'es' | 'fr';
+  showTimer?: boolean;
+  showCharacterCount?: boolean;
 }
 
 const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { darkMode: boolean; variant?: 'primary' | 'secondary' }> = ({
@@ -85,14 +90,56 @@ const ThinkingIndicator: React.FC<{ darkMode: boolean }> = ({ darkMode }) => (
   </motion.div>
 );
 
-const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkMode }) => {
+const translations = {
+  en: {
+    placeholder: 'How can I get started ?',
+    remainingChars: 'characters remaining',
+    cooldownMessage: 'You can send another message in',
+    seconds: 'seconds',
+    errorEmpty: 'Message cannot be empty',
+    errorLimit: 'Character limit exceeded',
+    errorCooldown: 'Please wait before sending another message',
+  },
+  es: {
+    placeholder: 'Pregunta sobre tus análisis de Twitter...',
+    remainingChars: 'caracteres restantes',
+    cooldownMessage: 'Puedes enviar otro mensaje en',
+    seconds: 'segundos',
+    errorEmpty: 'El mensaje no puede estar vacío',
+    errorLimit: 'Límite de caracteres excedido',
+    errorCooldown: 'Por favor espera antes de enviar otro mensaje',
+  },
+  fr: {
+    placeholder: 'Posez des questions sur vos analyses Twitter...',
+    remainingChars: 'caractères restants',
+    cooldownMessage: 'Vous pouvez envoyer un autre message dans',
+    seconds: 'secondes',
+    errorEmpty: 'Le message ne peut pas être vide',
+    errorLimit: 'Limite de caractères dépassée',
+    errorCooldown: 'Veuillez patienter avant d\'envoyer un autre message',
+  },
+};
+
+const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
+  darkMode,
+  characterLimit = 50,
+  cooldownDuration = 30,
+  language = 'en',
+  showTimer = true,
+  showCharacterCount = true,
+}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState<number>(0);
+  const [lastMessageTime, setLastMessageTime] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const t = translations[language];
 
   const predefinedQuestions: string[] = [
     "Best posting time",
@@ -110,15 +157,57 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    if (cooldown > 0) {
+      timer = setInterval(() => {
+        setCooldown((prev) => Math.max(0, prev - 1));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newInput = e.target.value;
+    if (newInput.length <= characterLimit) {
+      setInput(newInput);
+      setError(null);
+    } else {
+      setError(t.errorLimit);
+    }
+  };
+
+  const getInputColor = () => {
+    const ratio = input.length / characterLimit;
+    if (ratio < 0.8) return darkMode ? 'text-dark-primary' : 'text-light-tertiary';
+    if (ratio < 1) return 'text-yellow-500';
+    return 'text-red-500';
+  };
 
   const handleSendMessage = useCallback(async () => {
-    if (!input.trim()) return;
+    if (input.trim() === '') {
+      setError(t.errorEmpty);
+      return;
+    }
+
+    if (input.length > characterLimit) {
+      setError(t.errorLimit);
+      return;
+    }
+
+    const currentTime = Date.now();
+    if (currentTime - lastMessageTime < cooldownDuration * 1000) {
+      setError(t.errorCooldown);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
     const userMessage = input;
     setMessages(prev => [...prev, { text: userMessage, sender: 'user' }]);
     setInput('');
+    setLastMessageTime(currentTime);
+    setCooldown(cooldownDuration);
 
     try {
       const aiResponse = await aiService.getAIResponse(userMessage);
@@ -133,7 +222,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
     } finally {
       setIsLoading(false);
     }
-  }, [input]);
+  }, [input, characterLimit, cooldownDuration, lastMessageTime, t]);
 
   const handleClearChat = useCallback(() => {
     setMessages([]);
@@ -282,19 +371,27 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
                 ? 'bg-gradient-to-t to-transparent from-dark-background via-dark-background'
                 : 'bg-gradient-to-t to-transparent from-light-background via-light-background'
             }`}>
+              {showCharacterCount && (
+                <div className={`mb-2 text-xs ${getInputColor()}`}>
+                  {characterLimit - input.length} {t.remainingChars}
+                </div>
+              )}
               <div className="flex mb-4 space-x-2">
                 <Input
+                  // @ts-ignore 
+                  ref={inputRef}
                   type="text"
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={handleInputChange}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                  placeholder="Ask about your Twitter analytics..."
+                  placeholder={t.placeholder}
                   className="flex-grow text-sm shadow-lg sm:text-base"
                   darkMode={darkMode}
+                  disabled={cooldown > 0}
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={isLoading}
+                  disabled={isLoading || cooldown > 0 || input.length > characterLimit}
                   className={`p-2 sm:p-3 shadow-lg transition-all duration-300 ${
                     darkMode
                       ? 'bg-gradient-to-r from-dark-primary to-dark-secondary hover:from-dark-secondary hover:to-dark-primary'
@@ -305,6 +402,13 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
                   <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>
+              {showTimer && cooldown > 0 && (
+                <div className={`text-xs text-center ${
+                  darkMode ? 'text-dark-primary' : 'text-light-tertiary'
+                }`}>
+                  {t.cooldownMessage} {cooldown} {t.seconds}
+                </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {predefinedQuestions.map((question, index) => (
                   <Button
@@ -317,6 +421,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
                     }`}
                     darkMode={darkMode}
                     variant="secondary"
+                    disabled={cooldown > 0}
                   >
                     {question}
                   </Button>
