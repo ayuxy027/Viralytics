@@ -187,7 +187,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
             >
               <Github className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
               {!isAuthenticated && (
-                <span className="hidden text-xs sm:inline-block">Get Started</span>
+                <span className="hidden text-xs sm:inline-block">Proudly Open Source</span>
               )}
             </motion.a>
 
