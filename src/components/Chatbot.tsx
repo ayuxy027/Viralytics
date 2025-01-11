@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Trash2Icon, X, Minimize2, Maximize2, Send, MessageSquare } from 'lucide-react';
+import aiService from '../ai/aiService'
 
 interface Message {
   text: string;
