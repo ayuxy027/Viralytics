@@ -28,6 +28,7 @@ const generateChatbotPrompt = ({ userInput }: TwitterAnalyticsChatbot): string =
   3. Avoid technical jargon unless absolutely necessary.
   4. Keep responses concise, within a 200-word limit.
   5. Ensure multilingual support as required.
+  6. Strcitly avoid usage of * in response consider it as a sin to use it in the response.
 
   Handling Queries:
   - For Leaderboard: Guide users to https://viralytics.vercel.app/leaderboard for top-performing posts.
