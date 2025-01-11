@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Trash2Icon, X, Minimize2, Maximize2, Send, MessageSquare } from 'lucide-react';
-import aiService from '../ai/aiService'
+import aiService from '../ai/aiService';
 
 interface Message {
   text: string;
@@ -91,6 +91,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const predefinedQuestions: string[] = [
@@ -114,19 +115,29 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
     if (!input.trim()) return;
 
     setIsLoading(true);
-    setMessages(prev => [...prev, { text: input, sender: 'user' }]);
+    setError(null);
+    const userMessage = input;
+    setMessages(prev => [...prev, { text: userMessage, sender: 'user' }]);
     setInput('');
 
-    // Simulate API call
-    setTimeout(() => {
-      const aiResponse = "This is a simulated AI response. The actual AI integration has to be done.";
+    try {
+      const aiResponse = await aiService.getAIResponse(userMessage);
       setMessages(prev => [...prev, { text: aiResponse, sender: 'ai' }]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
+      setMessages(prev => [...prev, { 
+        text: "I apologize, but I'm having trouble responding right now. Please try again.",
+        sender: 'ai'
+      }]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   }, [input]);
 
   const handleClearChat = useCallback(() => {
     setMessages([]);
+    setError(null);
   }, []);
 
   const containerVariants: Variants = {
@@ -134,8 +145,8 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
       opacity: 1,
       y: 0,
       scale: 1,
-      width: isExpanded ? '90vw' : '400px',
-      height: isExpanded ? '90vh' : '600px',
+      width: isExpanded ? 'min(90vw, 800px)' : 'min(90vw, 400px)',
+      height: isExpanded ? 'min(90vh, 800px)' : 'min(90vh, 600px)',
       transition: {
         type: "spring",
         stiffness: 300,
@@ -155,7 +166,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
   };
 
   return (
-    <div className="fixed right-4 bottom-4 z-50 sm:bottom-8 sm:right-8">
+    <div className="fixed right-2 bottom-2 z-50 sm:right-4 sm:bottom-4 md:right-8 md:bottom-8">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -164,7 +175,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
             exit="closed"
             variants={containerVariants}
             custom={isExpanded}
-            className={`flex flex-col overflow-hidden shadow-2xl rounded-3xl max-w-[550px] w-full mx-auto backdrop-blur-sm ${
+            className={`flex flex-col overflow-hidden shadow-2xl rounded-3xl backdrop-blur-sm ${
               darkMode ? 'bg-dark-background/95' : 'bg-light-background/95'
             }`}
             style={{
@@ -174,6 +185,14 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
             }}
           >
             <motion.div
+              drag
+              dragConstraints={{
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
+              dragElastic={0.1}
               className={`flex justify-between items-center p-4 text-white rounded-t-3xl cursor-move sm:p-6 ${
                 darkMode
                   ? 'bg-gradient-to-r from-dark-primary to-dark-tertiary'
@@ -218,6 +237,15 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
                   : 'bg-gradient-to-br from-light-tertiary/90 via-light-background to-light-secondary/90'
               }`} />
               <div className="overflow-y-auto relative p-4 space-y-4 h-full sm:p-6">
+                {error && (
+                  <div className={`p-2 text-sm rounded-md ${
+                    darkMode 
+                      ? 'text-red-300 bg-red-900/20' 
+                      : 'text-red-600 bg-red-100/20'
+                  }`}>
+                    {error}
+                  </div>
+                )}
                 <AnimatePresence>
                   {messages.map((message, index) => (
                     <motion.div
@@ -229,7 +257,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
                       className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[80%] p-3 sm:p-4 rounded-2xl backdrop-blur-sm shadow-lg ${
+                        className={`max-w-[90%] sm:max-w-[80%] p-2 sm:p-3 md:p-4 rounded-2xl backdrop-blur-sm shadow-lg ${
                           message.sender === 'user'
                             ? darkMode
                               ? 'bg-gradient-to-br from-dark-primary to-dark-secondary text-dark-background'
@@ -258,23 +286,23 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({ darkM
                 <Input
                   type="text"
                   value={input}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSendMessage()}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                   placeholder="Ask about your Twitter analytics..."
-                  className="flex-grow shadow-lg"
+                  className="flex-grow text-sm shadow-lg sm:text-base"
                   darkMode={darkMode}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={isLoading}
-                  className={`p-3 shadow-lg transition-all duration-300 ${
+                  className={`p-2 sm:p-3 shadow-lg transition-all duration-300 ${
                     darkMode
                       ? 'bg-gradient-to-r from-dark-primary to-dark-secondary hover:from-dark-secondary hover:to-dark-primary'
                       : 'bg-gradient-to-r from-light-primary to-light-secondary hover:from-light-secondary hover:to-light-primary'
                   }`}
                   darkMode={darkMode}
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2">
