@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Trash2Icon, X, Minimize2, Maximize2, Send, MessageSquare } from 'lucide-react';
+import { Trash2Icon, X, Minimize2, Maximize2, Send} from 'lucide-react';
+import { FaRocketchat } from "react-icons/fa";
 import aiService from '../ai/aiService';
 
 interface Message {
@@ -443,7 +444,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
               : 'bg-gradient-to-r from-light-primary to-light-tertiary hover:from-light-tertiary hover:to-light-primary'
           }`}
         >
-          <MessageSquare className="w-6 h-6" />
+          <FaRocketchat className="w-6 h-6" />
         </motion.button>
       )}
     </div>

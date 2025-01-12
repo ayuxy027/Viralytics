@@ -10,35 +10,35 @@ export default {
     extend: {
       colors: {
         light: {
-          primary: '#7A92A5',
-          secondary: '#BCCEDD',
-          tertiary: '#145168',
-          background: '#E6EEF5'
+          primary: '#5F7D94',
+          secondary: '#9FB5C8',
+          tertiary: '#103B56',
+          background: '#DDE6EF'
         },
         dark: {
-          primary: '#C0C8D4',
-          secondary: '#5E78A2',
-          tertiary: '#163C5C',
-          background: '#172739'
+          primary: '#89A2BA',
+          secondary: '#3E5062',
+          tertiary: '#1A2B3B',
+          background: '#0C1219'
         },
         text: {
-          dark: '#376f99',
-          light: '#6989A3',
-          dim: '#A0B3C0',
-          fade: '#B0C0D0'
+          dark: '#A2B7CE',
+          light: '#D1DFEC',
+          dim: '#798A9E',
+          fade: '#4C5D6F'
         },
         nav: {
-          dark: '#172739',
-          light: '#F2F6FA'
-        }
+          dark: '#0D1620',
+          light: '#EBF1F6'
+        },
+      },
+      backgroundImage: {
+        'noise': 'url("data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.3" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%" height="100%" filter="url(%23noise)" opacity="0.07"/%3E%3C/svg%3E")'
+      },
+      opacity: {
+        '85': '0.85'
+      }
     },
-    backgroundImage: {
-      'noise': 'url("data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%" height="100%" filter="url(%23noise)" opacity="0.075"/%3E%3C/svg%3E")',
-    },
-    opacity: {
-      '85': '0.85',
-    }
   },
-},
-plugins: [],
-}
+  plugins: [],
+};
