@@ -1,6 +1,5 @@
-import { nav, text } from "framer-motion/client";
-
-export default {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
