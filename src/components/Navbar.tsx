@@ -205,7 +205,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
 
             {/* GitHub Link */}
             <motion.a
-              href="https://github.com/ChaiOrCode/Viralytics"
+              href="https://github.com/ayuxy027/Viralytics"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}
