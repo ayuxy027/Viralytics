@@ -39,8 +39,17 @@ const mobileMenuVariants = {
   exit: { x: '100%', opacity: 0, transition: { duration: 0.2 } }
 };
 
+// Define proper User type
+interface Auth0User {
+  name?: string;
+  email?: string;
+  picture?: string;
+  sub?: string;
+  [key: string]: unknown;
+}
+
 // UserProfile Component
-const UserProfile: React.FC<{ user: any; darkMode: boolean }> = ({ user, darkMode }) => {
+const UserProfile: React.FC<{ user: Auth0User | undefined; darkMode: boolean }> = ({ user, darkMode }) => {
   if (!user) return null;
   const userImage = user.picture || '/api/placeholder/150/150';
 

@@ -4,6 +4,8 @@ import { useAuth0 } from '@auth0/auth0-react';
 import Hero from '../components/Hero';
 import Navbar from '../components/Navbar';
 import Chat from '../components/Chatbot';
+import AuthErrorBoundary from '../components/AuthErrorBoundary';
+import AuthLoading from '../components/AuthLoading';
 import Analytics from './Analytics';
 import Leaderboard from './Leaderboard';
 import Health from './Health';
@@ -31,15 +33,16 @@ const Home: React.FC = () => {
 
     if (isLoading) {
         console.log('Auth is loading');
-        return <div>Loading...</div>;
+        return <AuthLoading darkMode={darkMode} />;
     }
 
     console.log('Rendering Home component');
 
     return (
-        <Router>
-            <div className={darkMode ? 'dark' : ''}>
-                <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        <AuthErrorBoundary>
+            <Router>
+                <div className={darkMode ? 'dark' : ''}>
+                    <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                 <Routes>
                     <Route
                         path="/"
@@ -93,6 +96,7 @@ const Home: React.FC = () => {
                 </Routes>
             </div>
         </Router>
+        </AuthErrorBoundary>
     );
 };
 
