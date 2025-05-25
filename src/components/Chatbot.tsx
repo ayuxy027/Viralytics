@@ -11,6 +11,7 @@ interface Message {
   text: string;
   sender: 'user' | 'ai';
   timestamp: number;
+  isStreaming?: boolean;
 }
 
 interface TwitterAnalyticsChatbotProps {
@@ -36,13 +37,13 @@ const MarkdownRenderer: React.FC<{ content: string; darkMode: boolean }> = ({ co
       remarkPlugins={[remarkGfm]}
       components={{
         li: ({ ...props }) => (
-          <li className={`list-item ${darkMode ? 'marker:text-dark-primary' : 'marker:text-light-primary'}`} {...props} />
+          <li className={`list-item ${darkMode ? 'marker:text-dark-primary' : 'marker:text-light-tertiary'}`} {...props} />
         ),
         a: ({ ...props }) => (
           <a
             target="_blank"
             rel="noopener noreferrer"
-            className={`${darkMode ? 'text-dark-primary' : 'text-light-primary'} hover:underline`}
+            className={`${darkMode ? 'text-dark-primary' : 'text-light-tertiary'} hover:underline`}
             {...props}
           />
         ),
@@ -51,7 +52,9 @@ const MarkdownRenderer: React.FC<{ content: string; darkMode: boolean }> = ({ co
           const match = /language-(\w+)/.exec(className || '');
           return !match ? (
             <code
-              className={`px-1 py-0.5 rounded text-sm font-mono ${darkMode ? 'bg-dark-secondary/20' : 'bg-light-secondary/20'
+              className={`px-2 py-1 rounded-md text-sm font-mono ${darkMode
+                ? 'bg-dark-secondary/30 text-dark-primary'
+                : 'bg-light-secondary/30 text-light-tertiary border border-light-secondary/50'
                 }`}
               {...props}
             >
@@ -94,17 +97,15 @@ const LanguageSelector: React.FC<{
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm transition-all ${darkMode
-          ? 'bg-dark-background/50 hover:bg-dark-secondary/30 text-dark-background border border-dark-background/20'
-          : 'bg-light-background/50 hover:bg-light-secondary/30 text-light-background border border-light-background/20'
+        className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all duration-200 ${darkMode
+          ? 'bg-dark-background border-dark-secondary text-dark-primary hover:bg-dark-secondary/20'
+          : 'bg-nav-light border-light-secondary text-light-tertiary hover:bg-light-secondary/20 shadow-sm'
           }`}
       >
         <Globe className="w-4 h-4" />
-        <span>{currentLanguage?.nativeName || "English"}</span>
+        <span className="text-sm font-medium">{currentLanguage?.nativeName || "English"}</span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
@@ -113,40 +114,39 @@ const LanguageSelector: React.FC<{
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </motion.div>
-      </motion.button>
+      </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className={`absolute right-0 z-50 mt-2 w-56 max-h-64 overflow-y-auto rounded-xl shadow-2xl backdrop-blur-sm ${darkMode
-              ? 'border bg-dark-background/95 border-dark-secondary/20'
-              : 'border bg-light-background/95 border-light-secondary/20'
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
+            className={`absolute right-0 z-50 mt-2 w-56 max-h-64 overflow-y-auto rounded-lg border shadow-lg ${darkMode
+              ? 'bg-dark-background border-dark-secondary'
+              : 'bg-nav-light border-light-secondary shadow-xl'
               }`}
           >
             {SUPPORTED_LANGUAGES.map((language: Language) => (
-              <motion.button
+              <button
                 key={language.code}
-                whileHover={{ backgroundColor: darkMode ? 'rgba(24,76,116,0.1)' : 'rgba(26,88,133,0.1)' }}
                 onClick={() => {
                   onSelectLanguage(language.code);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 text-sm transition-colors ${selectedLanguage === language.code
-                  ? (darkMode ? 'bg-dark-primary/10 font-medium' : 'bg-light-primary/10 font-medium')
+                className={`w-full text-left px-4 py-3 text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg hover:${darkMode ? 'bg-dark-secondary/20' : 'bg-light-secondary/20'} ${selectedLanguage === language.code
+                  ? (darkMode ? 'bg-dark-secondary/30' : 'bg-light-secondary/30 text-light-tertiary font-medium')
                   : ''
                   }`}
               >
                 <span className={`block ${darkMode ? 'text-dark-primary' : 'text-light-tertiary'}`}>
                   {language.nativeName}
                 </span>
-                <span className={`block text-xs ${darkMode ? 'text-dark-primary/70' : 'text-light-tertiary/70'}`}>
+                <span className={`block text-xs ${darkMode ? 'text-text-dark' : 'text-text-dim'}`}>
                   {language.name}
                 </span>
-              </motion.button>
+              </button>
             ))}
           </motion.div>
         )}
@@ -175,37 +175,35 @@ const Button: React.FC<{
   disabled,
   type = 'button',
 }) => {
-    const baseStyle = "inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:pointer-events-none rounded-full";
+    const baseStyle = "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:pointer-events-none rounded-lg";
 
     const variants = {
       primary: darkMode
-        ? "bg-dark-primary hover:bg-dark-secondary text-dark-background shadow-lg hover:shadow-xl"
-        : "bg-light-tertiary hover:bg-light-primary text-light-background shadow-lg hover:shadow-xl",
+        ? "bg-dark-primary hover:bg-dark-secondary text-dark-background shadow-sm hover:shadow-md"
+        : "bg-light-tertiary hover:bg-light-primary text-nav-light shadow-md hover:shadow-lg",
       secondary: darkMode
-        ? "bg-dark-background/50 hover:bg-dark-secondary/20 text-dark-primary border border-dark-primary/20"
-        : "bg-light-background/50 hover:bg-light-secondary/20 text-light-tertiary border border-light-tertiary/20",
+        ? "bg-dark-secondary hover:bg-dark-tertiary text-dark-primary border border-dark-secondary"
+        : "bg-nav-light hover:bg-light-secondary/30 text-light-tertiary border border-light-secondary shadow-sm",
       ghost: darkMode
         ? "bg-transparent hover:bg-dark-secondary/20 text-dark-primary"
-        : "bg-transparent hover:bg-light-secondary/20 text-light-tertiary"
+        : "bg-transparent hover:bg-light-secondary/20 text-nav-light"
     };
 
     const sizes = {
-      sm: "text-xs px-3 py-1.5",
+      sm: "text-xs px-3 py-2",
       md: "text-sm px-4 py-2",
       lg: "text-base px-6 py-3"
     };
 
     return (
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+      <button
         className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className}`}
         onClick={onClick}
         disabled={disabled}
         type={type}
       >
         {children}
-      </motion.button>
+      </button>
     );
   };
 
@@ -230,18 +228,17 @@ const Input = React.forwardRef<HTMLInputElement, {
   disabled,
 }, ref) => {
   return (
-    <motion.input
+    <input
       ref={ref}
-      whileFocus={{ scale: 1.01 }}
       type={type}
       value={value}
       onChange={onChange}
       onKeyDown={onKeyDown}
       placeholder={placeholder}
       disabled={disabled}
-      className={`flex px-4 py-3 w-full text-sm rounded-2xl border-2 transition-all duration-300 backdrop-blur-sm placeholder:text-opacity-70 focus:outline-none focus:ring-0 focus:border-opacity-100 ${darkMode
-        ? 'bg-dark-background/80 border-dark-primary/30 focus:border-dark-primary text-dark-primary placeholder:text-dark-primary'
-        : 'bg-light-background/80 border-light-tertiary/30 focus:border-light-tertiary text-light-tertiary placeholder:text-light-tertiary'
+      className={`flex px-4 py-3 w-full text-sm rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${darkMode
+        ? 'bg-dark-background border-dark-secondary focus:border-dark-primary focus:ring-dark-primary text-dark-primary placeholder:text-text-dark'
+        : 'bg-nav-light border-light-secondary focus:border-light-tertiary focus:ring-light-primary/30 text-light-tertiary placeholder:text-text-dim shadow-sm'
         } ${className}`}
     />
   );
@@ -249,43 +246,95 @@ const Input = React.forwardRef<HTMLInputElement, {
 
 Input.displayName = 'Input';
 
-// Enhanced thinking indicator
+// Clean thinking indicator
 const ThinkingIndicator: React.FC<{ darkMode: boolean }> = ({ darkMode }) => (
   <motion.div
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.8 }}
-    transition={{ duration: 0.3 }}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -10 }}
+    transition={{ duration: 0.2 }}
     className="flex justify-start"
   >
-    <div className={`p-4 rounded-2xl max-w-[80%] backdrop-blur-sm ${darkMode
-      ? 'bg-dark-background/90 text-dark-primary border border-dark-secondary/20'
-      : 'bg-light-background/90 text-light-tertiary border border-light-secondary/20'
+    <div className={`px-4 py-3 rounded-lg border max-w-[80%] ${darkMode
+      ? 'bg-dark-background border-dark-secondary text-dark-primary'
+      : 'bg-nav-light border-light-secondary text-light-tertiary shadow-sm'
       }`}>
-      <motion.div className="flex items-center text-sm font-medium">
-        <span className="mr-3">AI is thinking</span>
-        <div className="flex space-x-1">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.4, 1, 0.4]
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 1.5,
-                delay: i * 0.2
-              }}
-              className={`w-2 h-2 rounded-full ${darkMode ? 'bg-dark-primary' : 'bg-light-tertiary'
-                }`}
-            />
-          ))}
-        </div>
-      </motion.div>
+      <div className="text-sm">
+        Thinking...
+      </div>
     </div>
   </motion.div>
 );
+
+// Fast streaming text component without cursor
+const StreamingText: React.FC<{
+  text: string;
+  darkMode: boolean;
+  onComplete?: () => void;
+}> = ({ text, darkMode, onComplete }) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 10); // 3x faster - was 30ms, now 10ms
+
+      return () => clearTimeout(timer);
+    } else if (onComplete) {
+      onComplete();
+    }
+  }, [currentIndex, text, onComplete]);
+
+  useEffect(() => {
+    setDisplayedText('');
+    setCurrentIndex(0);
+  }, [text]);
+
+  return (
+    <div className="relative">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          li: ({ ...props }) => (
+            <li className={`list-item ${darkMode ? 'marker:text-dark-primary' : 'marker:text-light-tertiary'}`} {...props} />
+          ),
+          a: ({ ...props }) => (
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${darkMode ? 'text-dark-primary' : 'text-light-tertiary'} hover:underline`}
+              {...props}
+            />
+          ),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          code: ({ className, children, ...props }: any) => {
+            const match = /language-(\w+)/.exec(className || '');
+            return !match ? (
+              <code
+                className={`px-2 py-1 rounded-md text-sm font-mono ${darkMode
+                  ? 'bg-dark-secondary/30 text-dark-primary'
+                  : 'bg-light-secondary/30 text-light-tertiary border border-light-secondary/50'
+                  }`}
+                {...props}
+              >
+                {children}
+              </code>
+            ) : (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          }
+        }}
+      >
+        {displayedText}
+      </ReactMarkdown>
+    </div>
+  );
+};
 
 const translations = {
   en: {
@@ -358,10 +407,30 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
   const [cooldown, setCooldown] = useState<number>(0);
   const [lastMessageTime, setLastMessageTime] = useState<number>(0);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(language);
+  const [_streamingMessageId, setStreamingMessageId] = useState<number | null>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const t = translations[selectedLanguage as keyof typeof translations] || translations.en;
+
+  // Check screen size and handle responsive behavior
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Auto-collapse on small screens
+  useEffect(() => {
+    if (isSmallScreen && isExpanded) {
+      setIsExpanded(false);
+    }
+  }, [isSmallScreen, isExpanded]);
 
   // Detect browser language on mount
   useEffect(() => {
@@ -406,8 +475,8 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
   const getInputColor = () => {
     const ratio = input.length / characterLimit;
     if (ratio < 0.8) return darkMode ? 'text-dark-primary' : 'text-light-tertiary';
-    if (ratio < 1) return 'text-yellow-500';
-    return 'text-red-500';
+    if (ratio < 1) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   const handleSendMessage = useCallback(async (messageText?: string) => {
@@ -444,12 +513,20 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
     setCooldown(cooldownDuration);
 
     try {
+      // Show thinking indicator for 2.5 seconds before generating response
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
       const aiResponse = await groqService.getAIResponse(userInput);
+      const aiMessageId = Date.now();
+
       const aiMessage: Message = {
         text: aiResponse,
         sender: 'ai',
-        timestamp: Date.now()
+        timestamp: aiMessageId,
+        isStreaming: true
       };
+
+      setStreamingMessageId(aiMessageId);
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -465,23 +542,35 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
     }
   }, [input, characterLimit, cooldownDuration, lastMessageTime, t]);
 
+  const handleStreamingComplete = useCallback((messageId: number) => {
+    setStreamingMessageId(null);
+    setMessages(prev =>
+      prev.map(msg =>
+        msg.timestamp === messageId
+          ? { ...msg, isStreaming: false }
+          : msg
+      )
+    );
+  }, []);
+
   const handleClearChat = useCallback(() => {
     setMessages([]);
     setError(null);
+    setStreamingMessageId(null);
   }, []);
 
-  const handleQuestionClick = (question: string) => {
+  const handleQuestionClick = useCallback((question: string) => {
     setInput(question);
     setTimeout(() => handleSendMessage(question), 100);
-  };
+  }, [handleSendMessage]);
 
   const containerVariants: Variants = {
     open: (isExpanded) => ({
       opacity: 1,
       y: 0,
       scale: 1,
-      width: isExpanded ? 'min(95vw, 900px)' : 'min(90vw, 450px)',
-      height: isExpanded ? 'min(95vh, 850px)' : 'min(90vh, 650px)',
+      width: isExpanded ? 'min(90vw, 800px)' : 'min(85vw, 420px)',
+      height: isExpanded ? 'min(90vh, 750px)' : 'min(85vh, 600px)',
       transition: {
         type: "spring",
         stiffness: 300,
@@ -491,7 +580,7 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
     closed: {
       opacity: 0,
       y: 30,
-      scale: 0.9,
+      scale: 0.95,
       transition: {
         type: "spring",
         stiffness: 300,
@@ -510,129 +599,168 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
             exit="closed"
             variants={containerVariants}
             custom={isExpanded}
-            className={`flex flex-col overflow-hidden shadow-2xl rounded-3xl backdrop-blur-md ${darkMode
-              ? 'border bg-dark-background/95 border-dark-secondary/20'
-              : 'border bg-light-background/95 border-light-secondary/20'
+            className={`flex flex-col overflow-hidden shadow-2xl rounded-2xl border transition-all duration-300 ${darkMode
+              ? 'bg-dark-background border-dark-secondary'
+              : 'bg-light-background border-light-secondary shadow-2xl'
               }`}
-            style={{
-              boxShadow: darkMode
-                ? '0 25px 50px -12px rgba(24,76,116,0.4), 0 0 0 1px rgba(24,76,116,0.1)'
-                : '0 25px 50px -12px rgba(26,88,133,0.4), 0 0 0 1px rgba(26,88,133,0.1)',
-            }}
           >
-            {/* Enhanced Header */}
-            <motion.div
-              drag
-              dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-              dragElastic={0.1}
-              className={`flex justify-between items-center p-6 text-white rounded-t-3xl cursor-move bg-gradient-to-r ${darkMode
-                ? 'from-dark-primary via-dark-secondary to-dark-tertiary'
-                : 'from-light-primary via-light-secondary to-light-tertiary'
+            {/* Responsive Header */}
+            <div
+              className={`flex justify-between items-center border-b rounded-t-2xl transition-all duration-200 ${isExpanded ? 'p-5' : 'p-4'
+                } ${darkMode
+                  ? 'bg-dark-tertiary border-dark-secondary text-dark-primary'
+                  : 'bg-light-tertiary border-light-secondary text-nav-light'
                 }`}
             >
-              <div className="flex items-center space-x-4">
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-                  className={`flex justify-center items-center w-12 h-12 text-lg font-bold rounded-2xl shadow-inner backdrop-blur-sm ${darkMode
-                    ? 'bg-dark-background/80 text-dark-primary'
-                    : 'bg-light-background/80 text-light-tertiary'
-                    }`}
-                >
-                  <FaRocketchat className="w-6 h-6" />
-                </motion.div>
+              {/* Left Side - Logo and Title */}
+              <div className={`flex items-center transition-all duration-200 ${isExpanded ? 'space-x-4' : 'space-x-3'}`}>
+                <div className={`flex justify-center items-center rounded-xl transition-all duration-200 ${isExpanded ? 'w-12 h-12' : 'w-10 h-10'
+                  } ${darkMode
+                    ? 'bg-dark-primary text-dark-background'
+                    : 'bg-nav-light text-light-tertiary shadow-sm'
+                  }`}>
+                  <FaRocketchat className={`transition-all duration-200 ${isExpanded ? 'w-6 h-6' : 'w-5 h-5'}`} />
+                </div>
                 <div>
-                  <h3 className="text-lg font-bold">Viralytics AI</h3>
-                  <p className="text-sm opacity-90">Your social media optimizer</p>
+                  <h3 className={`font-bold transition-all duration-200 ${isExpanded ? 'text-lg' : 'text-base'}`}>
+                    Viralytics AI
+                  </h3>
+                  <motion.p
+                    initial={false}
+                    animate={{
+                      opacity: isExpanded ? 1 : 0,
+                      height: isExpanded ? 'auto' : 0,
+                      marginTop: isExpanded ? '0.125rem' : 0
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="text-sm opacity-80 overflow-hidden"
+                  >
+                    Your social media optimizer
+                  </motion.p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <LanguageSelector
-                  selectedLanguage={selectedLanguage}
-                  onSelectLanguage={setSelectedLanguage}
-                  darkMode={darkMode}
-                />
-                <Button darkMode={darkMode} variant="ghost" size="sm" onClick={handleClearChat}>
-                  <Trash2Icon className="w-5 h-5" />
-                </Button>
-                <Button darkMode={darkMode} variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
-                  {isExpanded ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
-                </Button>
-                <Button darkMode={darkMode} variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
-                  <X className="w-5 h-5" />
-                </Button>
+
+              {/* Right Side - Controls */}
+              <div className={`flex items-center transition-all duration-200 ${isExpanded ? 'space-x-3' : 'space-x-2'}`}>
+                {/* Language Selector - Only show when expanded */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <LanguageSelector
+                        selectedLanguage={selectedLanguage}
+                        onSelectLanguage={setSelectedLanguage}
+                        darkMode={darkMode}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Action Buttons */}
+                <div className={`flex items-center transition-all duration-200 ${isExpanded ? 'space-x-2 ml-3 pl-3 border-l border-opacity-30 border-current' : 'space-x-1'
+                  }`}>
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Button darkMode={darkMode} variant="ghost" size="sm" onClick={handleClearChat}>
+                          <Trash2Icon className="w-4 h-4" />
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Hide expand button on small screens */}
+                  {!isSmallScreen && (
+                    <Button darkMode={darkMode} variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
+                      {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </Button>
+                  )}
+                  <Button darkMode={darkMode} variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Enhanced Messages Area */}
-            <div className="overflow-hidden relative flex-1">
-              <div className={`absolute inset-0 ${darkMode
-                ? 'bg-gradient-to-br from-dark-tertiary/95 via-dark-background to-dark-secondary/95'
-                : 'bg-gradient-to-br from-light-tertiary/95 via-light-background to-light-secondary/95'
-                }`} />
-              <div className="overflow-y-auto relative p-6 space-y-4 h-full">
+            <div className={`overflow-hidden relative flex-1 transition-colors duration-200 ${darkMode ? '' : 'bg-light-background'}`}>
+              <div className="overflow-y-auto relative p-4 space-y-4 h-full">
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`p-4 text-sm rounded-2xl backdrop-blur-sm ${darkMode
-                      ? 'text-red-300 border bg-red-900/30 border-red-500/20'
-                      : 'text-red-600 border bg-red-100/30 border-red-300/20'
-                      }`}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="p-3 text-sm rounded-lg border border-red-300 bg-red-50 text-red-700"
                   >
                     {error}
                   </motion.div>
                 )}
 
-                <AnimatePresence>
+                <AnimatePresence mode="popLayout">
                   {messages.map((message, index) => (
                     <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      key={`${message.timestamp}-${index}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
                       className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className={`max-w-[85%] p-4 rounded-2xl backdrop-blur-sm shadow-lg border ${message.sender === 'user'
+                      <div
+                        className={`max-w-[85%] p-3 rounded-xl transition-all duration-200 ${message.sender === 'user'
                           ? darkMode
-                            ? 'bg-gradient-to-br from-dark-primary to-dark-secondary text-dark-background border-dark-primary/20'
-                            : 'bg-gradient-to-br from-light-primary to-light-secondary text-light-background border-light-primary/20'
+                            ? 'bg-dark-primary text-dark-background border border-dark-primary shadow-sm'
+                            : 'bg-light-tertiary text-nav-light border border-light-tertiary shadow-md'
                           : darkMode
-                            ? 'bg-dark-background/90 text-dark-primary border-dark-secondary/20'
-                            : 'bg-light-background/90 text-light-tertiary border-light-secondary/20'
+                            ? 'bg-dark-secondary/30 text-dark-primary border border-dark-secondary'
+                            : 'bg-nav-light text-light-tertiary border border-light-secondary shadow-sm'
                           }`}
                       >
-                        <MarkdownRenderer content={message.text} darkMode={darkMode} />
-                      </motion.div>
+                        {message.sender === 'ai' && message.isStreaming ? (
+                          <StreamingText
+                            text={message.text}
+                            darkMode={darkMode}
+                            onComplete={() => handleStreamingComplete(message.timestamp)}
+                          />
+                        ) : (
+                          <MarkdownRenderer content={message.text} darkMode={darkMode} />
+                        )}
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
 
-                {isLoading && <ThinkingIndicator darkMode={darkMode} />}
+                <AnimatePresence>
+                  {isLoading && <ThinkingIndicator darkMode={darkMode} />}
+                </AnimatePresence>
                 <div ref={messagesEndRef} />
               </div>
             </div>
 
             {/* Enhanced Input Area */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className={`relative p-6 ${darkMode
-                ? 'bg-gradient-to-t to-transparent from-dark-background/95'
-                : 'bg-gradient-to-t to-transparent from-light-background/95'
-                }`}
-            >
+            <div className={`p-4 border-t rounded-b-2xl transition-colors duration-200 ${darkMode
+              ? 'border-dark-secondary bg-dark-background'
+              : 'border-light-secondary bg-light-background'
+              }`}>
               {showCharacterCount && (
-                <div className={`mb-3 text-xs font-medium ${getInputColor()}`}>
+                <motion.div
+                  className={`mb-2 text-xs font-medium transition-colors duration-200 ${getInputColor()}`}
+                  animate={{ opacity: input.length > characterLimit * 0.8 ? 1 : 0.7 }}
+                >
                   {characterLimit - input.length} {t.remainingChars}
-                </div>
+                </motion.div>
               )}
 
-              <div className="flex mb-4 space-x-3">
+              <div className="flex mb-3 space-x-2">
                 <Input
                   ref={inputRef}
                   type="text"
@@ -640,93 +768,82 @@ const TwitterAnalyticsChatbot: React.FC<TwitterAnalyticsChatbotProps> = ({
                   onChange={handleInputChange}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                   placeholder={t.placeholder}
-                  className="flex-grow shadow-lg"
+                  className="flex-grow"
                   darkMode={darkMode}
-                  disabled={cooldown > 0}
+                  disabled={cooldown > 0 || isLoading}
                 />
                 <Button
                   onClick={() => handleSendMessage()}
-                  disabled={isLoading || cooldown > 0 || input.length > characterLimit}
-                  className="px-6 shadow-lg"
+                  disabled={isLoading || cooldown > 0 || input.length > characterLimit || input.trim() === ''}
                   darkMode={darkMode}
                   size="lg"
                 >
                   {isLoading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    >
-                      <div className="w-5 h-5 rounded-full border-2 border-current border-t-transparent" />
-                    </motion.div>
+                    <div className="w-5 h-5 rounded-full border-2 border-current border-t-transparent animate-spin" />
                   ) : (
                     <Send className="w-5 h-5" />
                   )}
                 </Button>
               </div>
 
-              {showTimer && cooldown > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className={`text-xs text-center mb-4 ${darkMode ? 'text-dark-primary/70' : 'text-light-tertiary/70'
-                    }`}
-                >
-                  {t.cooldownMessage} {cooldown} {t.seconds}
-                </motion.div>
-              )}
+              <AnimatePresence>
+                {showTimer && cooldown > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className={`text-xs text-center mb-3 transition-colors duration-200 ${darkMode ? 'text-text-dark' : 'text-text-dim'}`}
+                  >
+                    {t.cooldownMessage} {cooldown} {t.seconds}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              <div className="flex flex-wrap gap-2">
-                {t.sampleQuestions.map((question, index) => (
+              {/* Responsive Sample Questions */}
+              <div className={`flex flex-wrap transition-all duration-200 ${isExpanded ? 'gap-2' : 'gap-1'}`}>
+                {t.sampleQuestions.slice(0, isExpanded ? 6 : 4).map((question, index) => (
                   <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    key={question}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ delay: index * 0.05 }}
                     onClick={() => handleQuestionClick(question)}
-                    className={`px-4 py-2 text-xs rounded-full border transition-all duration-300 backdrop-blur-sm ${darkMode
-                      ? 'border-dark-primary/30 hover:bg-dark-background/50 hover:border-dark-primary text-dark-primary'
-                      : 'border-light-primary/30 hover:bg-light-background/50 hover:border-light-primary text-light-tertiary'
+                    className={`${isExpanded ? 'px-3 py-1.5' : 'px-2 py-1'} text-xs rounded-lg border transition-all duration-200 ${darkMode
+                      ? 'border-dark-secondary text-dark-primary hover:bg-dark-secondary/20'
+                      : 'border-light-secondary text-light-tertiary hover:bg-light-secondary/20 bg-nav-light shadow-sm hover:shadow-md'
                       }`}
-                    disabled={cooldown > 0}
+                    disabled={cooldown > 0 || isLoading}
                   >
                     {question}
                   </motion.button>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Enhanced Toggle Button */}
-      {!isOpen && (
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsOpen(true)}
-          className={`relative p-4 text-white rounded-full shadow-2xl transition-all duration-500 group ${darkMode
-            ? 'bg-gradient-to-r from-dark-primary to-dark-tertiary hover:from-dark-tertiary hover:to-dark-primary'
-            : 'bg-gradient-to-r from-light-primary to-light-tertiary hover:from-light-tertiary hover:to-light-primary'
-            }`}
-          style={{
-            boxShadow: darkMode
-              ? '0 20px 40px -12px rgba(24,76,116,0.5)'
-              : '0 20px 40px -12px rgba(26,88,133,0.5)',
-          }}
-        >
-          <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsOpen(true)}
+            className={`p-4 rounded-xl shadow-lg transition-all duration-300 ${darkMode
+              ? 'bg-dark-primary text-dark-background hover:bg-dark-secondary shadow-dark-primary/20 hover:shadow-dark-primary/30'
+              : 'bg-light-tertiary text-nav-light hover:bg-light-primary shadow-lg hover:shadow-xl'
+              }`}
           >
-            <FaRocketchat className="w-7 h-7" />
-          </motion.div>
-
-          <motion.div
-            className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        </motion.button>
-      )}
+            <FaRocketchat className="w-6 h-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
